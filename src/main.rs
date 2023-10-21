@@ -1,28 +1,43 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use eframe::egui;
+use iced::widget::text;
+use iced::{Application, Theme, Command, Renderer, Settings};
+use iced::executor;
 
-fn main() -> Result<(), eframe::Error> {
-    let options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(800.0, 600.0)),
-        ..Default::default()
-    };
-    eframe::run_native(
-        "MarcoPad Macromaker",
-        options,
-        Box::new(|_cc| {
-            // This gives us image support:
-
-            Box::<App>::default()
-        }),
-    )
+fn main() -> iced::Result {
+    App::run(Settings::default())
 }
 
-#[derive(Default)]
-struct App {}
+#[derive(Clone, Copy, Debug)]
+enum Message {}
 
-impl eframe::App for App {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| ui.heading("MarcoPad"));
+#[derive(Default)]
+struct App;
+
+impl Application for App {
+    type Executor = executor::Default;
+
+    type Message = Message;
+
+    type Theme = Theme;
+
+    type Flags = ();
+
+    fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
+        (Self {}, Command::none())
+    }
+
+    fn title(&self) -> String {
+        "MarcoPad™ MacroMaker".to_string()
+    }
+
+    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+        match message {
+
+        }
+    }
+
+    fn view(&self) -> iced::Element<'_, Self::Message, Renderer<Self::Theme>> {
+        text("hi").into()
     }
 }
