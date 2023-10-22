@@ -2,14 +2,21 @@
 name = "marco-pad"
 version = "0.1.0"
 edition = "2021"
+authors = ["Tim Bukreew <timbukreew624@gmail.com>"]
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = "0.10"
+iced = { version = "0.10", features = ["svg"] }
+resvg = "0.36.0"
+
+[profile.dev]
+panic = "unwind"
 
 [profile.release]
 strip = true
 opt-level = "s"
 lto = "fat"
 codegen-units = 1
+panic = "abort"
