@@ -2,9 +2,10 @@
 
 use iced::{executor, font, window, Font};
 use iced::{Application, Command, Renderer, Settings, Theme};
+#[cfg(target_os = "windows")]
 use resvg::usvg::TreeParsing;
-pub mod style;
 pub mod menus;
+pub mod style;
 pub mod ui;
 mod updates;
 
@@ -13,16 +14,21 @@ pub const ICON_FONT: Font = Font::with_name("icons");
 pub const LOGO: &[u8; 1495] = include_bytes!("../assets/marcopad.svg");
 
 fn window_icon() -> Option<window::Icon> {
-    let rtree = resvg::usvg::Tree::from_data(LOGO, &resvg::usvg::Options::default()).unwrap();
-    let mut tree = resvg::Tree::from_usvg(&rtree);
-    tree.size = resvg::usvg::Size::from_wh(64.0, 64.0).unwrap();
+    #[cfg(target_os = "windows")]
+    {
+        let rtree = resvg::usvg::Tree::from_data(LOGO, &resvg::usvg::Options::default()).unwrap();
+        let mut tree = resvg::Tree::from_usvg(&rtree);
+        tree.size = resvg::usvg::Size::from_wh(64.0, 64.0).unwrap();
 
-    let mut buffer: [u8; 64 * 64 * 4] = [0; 64 * 64 * 4];
+        let mut buffer: [u8; 64 * 64 * 4] = [0; 64 * 64 * 4];
 
-    let mut pixmap = resvg::tiny_skia::PixmapMut::from_bytes(&mut buffer, 64, 64).unwrap();
-    tree.render(resvg::usvg::Transform::default(), &mut pixmap);
+        let mut pixmap = resvg::tiny_skia::PixmapMut::from_bytes(&mut buffer, 64, 64).unwrap();
+        tree.render(resvg::usvg::Transform::default(), &mut pixmap);
 
-    window::icon::from_rgba(buffer.to_vec(), 64, 64).ok()
+        window::icon::from_rgba(buffer.to_vec(), 64, 64).ok()
+    }
+    #[cfg(not(target_os = "windows"))]
+    None
 }
 fn main() -> iced::Result {
     App::run(Settings {
