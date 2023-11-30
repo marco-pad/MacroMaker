@@ -45,12 +45,15 @@ fn bottom_bar<'a>() -> Out<'a> {
 }
 
 fn middle<'a>(edited: Edited) -> Out<'a> {
-    container(column![toggle_button(edited), buttons()])
-        .height(Length::Fill)
-        .width(Length::Fill)
-        .padding(Padding::new(20.0))
-        .style(theme::Container::Custom(Box::new(ContainerStyle)))
-        .into()
+    container(row![
+        column![toggle_button(edited), buttons(),],
+        programming_panel()
+    ])
+    .height(Length::Fill)
+    .width(Length::Fill)
+    .padding(Padding::new(20.0))
+    .style(theme::Container::Custom(Box::new(ContainerStyle)))
+    .into()
 }
 
 fn toggle_button<'a>(edited: Edited) -> Out<'a> {
@@ -63,40 +66,19 @@ fn toggle_button<'a>(edited: Edited) -> Out<'a> {
         text,
         tooltip::Position::FollowCursor,
     )
+    .style(theme::Container::Box)
     .into()
 }
 
 fn buttons<'a>() -> Out<'a> {
     container(
         container(row![
-            vertical_space(Length::Fill),
-            column!(
-                horizontal_space(Length::Fill),
-                pad_button(),
-                pad_button(),
-                pad_button(),
-                horizontal_space(Length::Fill),
-            ),
-            vertical_space(Length::Fill),
-            column!(
-                horizontal_space(Length::Fill),
-                pad_button(),
-                pad_button(),
-                pad_button(),
-                horizontal_space(Length::Fill),
-            ),
-            vertical_space(Length::Fill),
-            column!(
-                horizontal_space(Length::Fill),
-                pad_button(),
-                pad_button(),
-                pad_button(),
-                horizontal_space(Length::Fill),
-            ),
-            vertical_space(Length::Fill),
+            column!(pad_button(), pad_button(), pad_button(),),
+            column!(pad_button(), pad_button(), pad_button(),),
+            column!(pad_button(), pad_button(), pad_button(),),
         ])
-        .width(400)
-        .height(400)
+        .width(340)
+        .height(340)
         .padding(20)
         .style(theme::Container::Custom(Box::new(ContainerStyle))),
     )
@@ -106,6 +88,12 @@ fn buttons<'a>() -> Out<'a> {
 
 fn pad_button<'a>() -> Out<'a> {
     container(button("bye bye welt").width(90.0).height(90.0))
+        .padding(5)
+        .into()
+}
+
+fn programming_panel<'a>() -> Out<'a> {
+    container(column![text("Hallo! Programming panel!")])
         .padding(5)
         .into()
 }
