@@ -81,9 +81,7 @@ fn buttons<'a>() -> Out<'a> {
 }
 
 fn pad_button<'a>() -> Out<'a> {
-    button("hallo")
-        .width(90.0)
-        .height(90.0)
-        .padding(Padding::new(300.0))
+    container(button("hallo").width(90.0).height(90.0))
+        .padding(Padding::new(10.0))
         .into()
 }
