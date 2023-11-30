@@ -1,8 +1,9 @@
-use crate::{Message, App, Menu, ui::{nav_button, back_icon}};
-use iced::{Padding, Length, Element, Renderer, Theme};
-use iced::widget::{
-    checkbox, column, container, horizontal_space, row, text
+use crate::{
+    ui::{back_icon, nav_button},
+    App, Menu, Message,
 };
+use iced::widget::{checkbox, column, container, horizontal_space, row, text};
+use iced::{Element, Length, Padding, Renderer, Theme};
 
 pub fn view<'a>(app: &App) -> Element<'a, Message, Renderer<Theme>> {
     container(column![

@@ -3,7 +3,7 @@ use crate::{
     ui::{nav_button, settings_icon},
     App, Edited, Menu, Message,
 };
-use iced::widget::{column, container, horizontal_space, row, svg, text, vertical_space};
+use iced::widget::{column, container, horizontal_space, row, svg, text};
 use iced::{
     theme,
     widget::{button, tooltip, Svg},

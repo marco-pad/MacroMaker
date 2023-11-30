@@ -18,7 +18,7 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             };
         }
         Message::EditChanged => {
-            app.edited = if (app.edited == Edited::Macros) {
+            app.edited = if app.edited == Edited::Macros {
                 Edited::Rgb
             } else {
                 Edited::Macros

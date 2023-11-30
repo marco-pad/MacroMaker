@@ -1,6 +1,6 @@
-use iced::{Element, Padding, theme};
-use iced::widget::{tooltip, container, text, button};
-use crate::{Message, Menu, ICON_FONT};
+use crate::{Menu, Message, ICON_FONT};
+use iced::widget::{button, container, text, tooltip};
+use iced::{theme, Element, Padding};
 
 fn icon<'a>(codepoint: char) -> Element<'a, Message> {
     text(codepoint).font(ICON_FONT).size(30).into()

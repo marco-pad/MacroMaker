@@ -1,6 +1,5 @@
-use iced::{Theme, Color};
 use iced::widget::container;
-
+use iced::{Color, Theme};
 
 pub struct ContainerStyle;
 
