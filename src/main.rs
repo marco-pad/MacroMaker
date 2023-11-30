@@ -1,5 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::time::Instant;
+
 use iced::{executor, font, window, Font};
 use iced::{Application, Command, Renderer, Settings, Theme};
 #[cfg(target_os = "windows")]
@@ -67,6 +69,7 @@ pub enum Edited {
 pub struct App {
     menu: Menu,
     edited: Edited,
+    when_edited: Instant,
     theme_light: bool,
     theme: Theme,
 }
@@ -76,6 +79,7 @@ impl Default for App {
         Self {
             menu: Menu::Main,
             edited: Edited::Macros,
+            when_edited: Instant::now(),
             theme_light: false,
             theme: Theme::Dark,
         }
