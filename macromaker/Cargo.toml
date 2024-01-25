@@ -9,4 +9,4 @@ publish = false
 
 [dependencies]
 iced = { version = "0.10", features = ["svg"] }
-resvg = "0.36.0"
+resvg = "0.38.0"
