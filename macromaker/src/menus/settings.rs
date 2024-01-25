@@ -12,9 +12,7 @@ pub fn view<'a>(app: &App) -> Element<'a, Message, Renderer<Theme>> {
             horizontal_space(Length::Fill),
             nav_button(Menu::Main, "Back", back_icon())
         ],
-        checkbox("Light Mode", app.theme_light, |val| Message::ThemeChanged(
-            val
-        )),
+        checkbox("Light Mode", app.theme_light, Message::ThemeChanged),
     ])
     .padding(Padding::new(7.0))
     .into()

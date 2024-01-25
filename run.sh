@@ -1,3 +1,3 @@
 ./build.sh
-scp target/riscv64gc-unknown-linux-musl/release/milk-v-test root@milk-v:programs/milk-v-test
-ssh root@milk-v programs/milk-v-test
+scp -O target/riscv64gc-unknown-linux-musl/release/firmware root@milkv:programs/firmware
+ssh root@milkv programs/firmware

@@ -1,17 +1,50 @@
-use std::thread::sleep;
-use std::time::Duration;
-use sysfs_gpio::{Direction, Pin, Result};
+use sysfs_gpio::{Direction, Error, Pin};
 
-fn main() -> Result<()> {
-    let my_led = Pin::new(508); // GP0
-    my_led.export()?;
-    my_led.set_direction(Direction::Out)?;
+fn main() -> sysfs_gpio::Result<()> {
+    let input = Pin::new(508); // GP0
+    input.export()?;
+    input.set_direction(Direction::In)?;
+    let mut button = Button::new(input)?;
+
     loop {
-        my_led.set_value(0).unwrap();
-        sleep(Duration::from_millis(200));
-        my_led.set_value(1).unwrap();
-        sleep(Duration::from_millis(200));
-        println!("On");
+        let result = button.poll()?;
+        println!("{result:?}");
     }
     // my_led.unexport()?;
+}
+
+struct Button {
+    pin: Pin,
+    previous_value: u8,
+}
+
+impl Button {
+    pub fn new(pin: Pin) -> Result<Self, Error> {
+        Ok(Self {
+            pin,
+            previous_value: pin.get_value()?,
+        })
+    }
+
+    /// Polls the button until it has changed.
+    pub fn poll(&mut self) -> Result<State, Error> {
+        loop {
+            let value = self.pin.get_value()?;
+            if value != self.previous_value {
+                self.previous_value = value;
+                return Ok(match value {
+                    0 => State::Pressed,
+                    1 => State::Released,
+                    _ => unreachable!(),
+                });
+            }
+        }
+    }
+}
+
+#[repr(u8)]
+#[derive(Clone, Copy, Debug)]
+enum State {
+    Pressed,
+    Released,
 }
