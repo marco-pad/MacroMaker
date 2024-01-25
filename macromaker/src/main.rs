@@ -52,6 +52,7 @@ pub enum Message {
     Settings(bool),
     ThemeChanged(bool),
     EditChanged,
+    Button(usize),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -72,6 +73,7 @@ pub struct App {
     when_edited: Instant,
     theme_light: bool,
     theme: Theme,
+    selected_button: usize,
 }
 
 impl Default for App {
@@ -82,6 +84,7 @@ impl Default for App {
             when_edited: Instant::now(),
             theme_light: false,
             theme: Theme::Dark,
+            selected_button: 0,
         }
     }
 }

@@ -25,6 +25,9 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             };
             app.when_edited = Instant::now();
         }
+        Message::Button(id) => {
+            app.selected_button = id;
+        }
     };
     Command::none()
 }

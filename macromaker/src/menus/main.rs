@@ -3,7 +3,7 @@ use crate::{
     ui::{nav_button, settings_icon},
     App, Edited, Menu, Message,
 };
-use iced::widget::{column, container, horizontal_space, row, svg, text};
+use iced::widget::{column, container, horizontal_space, row, svg, text, Rule, Space, Text};
 use iced::{
     theme,
     widget::{button, tooltip, Svg},
@@ -19,7 +19,7 @@ pub fn view(app: &App) -> Out {
     let top_bar = top_bar(logo);
     let bottom_bar = bottom_bar();
 
-    let middle = middle(app.edited);
+    let middle = middle(app.edited, app.selected_button);
 
     container(column![top_bar, middle, bottom_bar])
         .padding(Padding::new(7.0))
@@ -44,10 +44,10 @@ fn bottom_bar<'a>() -> Out<'a> {
     .into()
 }
 
-fn middle<'a>(edited: Edited) -> Out<'a> {
+fn middle<'a>(edited: Edited, selected: usize) -> Out<'a> {
     container(row![
         column![toggle_button(edited), buttons(),],
-        programming_panel()
+        programming_panel(selected)
     ])
     .height(Length::Fill)
     .width(Length::Fill)
@@ -72,10 +72,10 @@ fn toggle_button<'a>(edited: Edited) -> Out<'a> {
 
 fn buttons<'a>() -> Out<'a> {
     container(
-        container(row![
-            column!(pad_button(), pad_button(), pad_button(),),
-            column!(pad_button(), pad_button(), pad_button(),),
-            column!(pad_button(), pad_button(), pad_button(),),
+        container(column![
+            row!(pad_button(1), pad_button(2), pad_button(3),),
+            row!(pad_button(4), pad_button(5), pad_button(6),),
+            row!(pad_button(7), pad_button(8), pad_button(9),),
         ])
         .width(340)
         .height(340)
@@ -86,14 +86,25 @@ fn buttons<'a>() -> Out<'a> {
     .into()
 }
 
-fn pad_button<'a>() -> Out<'a> {
-    container(button("bye bye welt").width(90.0).height(90.0))
-        .padding(5)
-        .into()
+fn pad_button<'a>(id: usize) -> Out<'a> {
+    container(
+        button(Text::new(id.to_string()))
+            .width(90.0)
+            .height(90.0)
+            .on_press(Message::Button(id)),
+    )
+    .padding(5)
+    .into()
 }
 
-fn programming_panel<'a>() -> Out<'a> {
-    container(column![text("Hallo! Programming panel!")])
-        .padding(5)
-        .into()
+fn programming_panel<'a>(button_id: usize) -> Out<'a> {
+    if button_id == 0 {
+        return Space::new(0, 0).into();
+    }
+    container(row![
+        Rule::vertical(20),
+        column![text(format!("Editing button {button_id}."))],
+    ])
+    .padding(5)
+    .into()
 }
