@@ -1,25 +1,34 @@
 use crate::{
+    actions::Action,
+    selected_button,
     style::ContainerStyle,
     ui::{nav_button, settings_icon},
-    App, Edited, Menu, Message,
+    App, Menu, Message, BUTTONS, CONNECTION,
 };
-use iced::widget::{column, container, horizontal_space, row, svg, text, Rule, Space, Text};
+use firmware::State;
 use iced::{
     theme,
-    widget::{button, tooltip, Svg},
+    widget::{button, text_input, Svg},
     Element, Length, Padding, Renderer, Theme,
+};
+use iced::{
+    widget::{
+        button::Appearance, column, container, horizontal_space, pick_list, row, svg, text, Rule,
+        Space, Text,
+    },
+    Background, Color,
 };
 
 type Out<'a> = Element<'a, Message, Renderer<Theme>>;
 pub fn view(app: &App) -> Out {
-    let logo_handle = svg::Handle::from_memory(crate::LOGO.as_slice());
+    let logo_handle = svg::Handle::from_memory(crate::SVG_LOGO.as_slice());
 
     let logo = svg(logo_handle).width(60).height(60);
 
     let top_bar = top_bar(logo);
     let bottom_bar = bottom_bar();
 
-    let middle = middle(app.edited, app.selected_button);
+    let middle = middle(app.recording);
 
     container(column![top_bar, middle, bottom_bar])
         .padding(Padding::new(7.0))
@@ -44,10 +53,18 @@ fn bottom_bar<'a>() -> Out<'a> {
     .into()
 }
 
-fn middle<'a>(edited: Edited, selected: usize) -> Out<'a> {
+fn middle<'a>(recording: bool) -> Out<'a> {
+    let connection = unsafe {
+        if CONNECTION.is_some() {
+            text("connected")
+        } else {
+            text("not connected")
+        }
+    };
+    let selected_button = BUTTONS.lock()[selected_button() - 1].clone();
     container(row![
-        column![toggle_button(edited), buttons(),],
-        programming_panel(selected)
+        column![connection, buttons(),],
+        programming_panel(&selected_button, recording)
     ])
     .height(Length::Fill)
     .width(Length::Fill)
@@ -56,26 +73,25 @@ fn middle<'a>(edited: Edited, selected: usize) -> Out<'a> {
     .into()
 }
 
-fn toggle_button<'a>(edited: Edited) -> Out<'a> {
-    let text = match edited {
-        Edited::Macros => "Edit RGB lighting",
-        Edited::Rgb => "Edit macros and commands",
-    };
-    tooltip(
-        button(text).padding(10).on_press(Message::EditChanged),
-        text,
-        tooltip::Position::FollowCursor,
-    )
-    .style(theme::Container::Box)
-    .into()
-}
-
 fn buttons<'a>() -> Out<'a> {
+    let p = BUTTONS.lock().clone().map(|button| button.state);
     container(
         container(column![
-            row!(pad_button(1), pad_button(2), pad_button(3),),
-            row!(pad_button(4), pad_button(5), pad_button(6),),
-            row!(pad_button(7), pad_button(8), pad_button(9),),
+            row!(
+                pad_button(1, p[0]),
+                pad_button(2, p[1]),
+                pad_button(3, p[2]),
+            ),
+            row!(
+                pad_button(4, p[3]),
+                pad_button(5, p[4]),
+                pad_button(6, p[5]),
+            ),
+            row!(
+                pad_button(7, p[6]),
+                pad_button(8, p[7]),
+                pad_button(9, p[8]),
+            ),
         ])
         .width(340)
         .height(340)
@@ -86,25 +102,100 @@ fn buttons<'a>() -> Out<'a> {
     .into()
 }
 
-fn pad_button<'a>(id: usize) -> Out<'a> {
-    container(
-        button(Text::new(id.to_string()))
-            .width(90.0)
-            .height(90.0)
-            .on_press(Message::Button(id)),
+struct PressedButtonStyle;
+impl button::StyleSheet for PressedButtonStyle {
+    type Style = iced::Theme;
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        Appearance {
+            background: Some(Background::Color(Color::from_rgb8(50, 32, 212))),
+            text_color: Color::WHITE,
+            ..Default::default()
+        }
+    }
+}
+struct PhysicallyPressedButtonStyle;
+impl button::StyleSheet for PhysicallyPressedButtonStyle {
+    type Style = iced::Theme;
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        Appearance {
+            background: Some(Background::Color(Color::from_rgb8(200, 32, 112))),
+            text_color: Color::WHITE,
+            ..Default::default()
+        }
+    }
+}
+
+fn pad_button<'a>(id: usize, state: State) -> Out<'a> {
+    let pressed = id == selected_button();
+    let mut button = button(Text::new(id.to_string()))
+        .width(90.0)
+        .height(90.0)
+        .on_press(Message::Button(id));
+    if state == State::Pressed {
+        button = button.style(theme::Button::custom(PhysicallyPressedButtonStyle));
+    } else if pressed {
+        button = button.style(theme::Button::custom(PressedButtonStyle));
+    }
+
+    container(button).padding(5).into()
+}
+
+fn programming_panel<'a>(button: &crate::Button, recording: bool) -> Out<'a> {
+    let id = selected_button();
+    if id == 0 {
+        return Space::new(0, 0).into();
+    }
+    let pick_list = pick_list(
+        Action::ALL.to_vec(),
+        Some(button.action.clone()),
+        Message::EditButton,
     )
+    .placeholder("action");
+    container(row![
+        Rule::vertical(20),
+        column![
+            text(format!("Editing button {id}")).size(30),
+            Space::new(0, 10),
+            pick_list,
+            Space::new(0, 20),
+            action_menu(button, recording),
+        ],
+    ])
     .padding(5)
     .into()
 }
 
-fn programming_panel<'a>(button_id: usize) -> Out<'a> {
-    if button_id == 0 {
-        return Space::new(0, 0).into();
+fn action_menu<'a>(key: &crate::Button, recording: bool) -> Out<'a> {
+    match &key.action {
+        Action::Nothing => container(text("This button does nothing.")),
+        Action::Keypress(key) => container(column![
+            text(format!("This key simulates key \"{key:?}\".")),
+            {
+                if recording {
+                    button(
+                        Text::new("Recording key...")
+                            .horizontal_alignment(iced::alignment::Horizontal::Center)
+                            .vertical_alignment(iced::alignment::Vertical::Center),
+                    )
+                    .width(220)
+                    .height(90)
+                } else {
+                    button(
+                        Text::new("Record key")
+                            .horizontal_alignment(iced::alignment::Horizontal::Center)
+                            .vertical_alignment(iced::alignment::Vertical::Center),
+                    )
+                    .on_press(Message::RecordKey)
+                    .width(220)
+                    .height(90)
+                }
+            },
+        ]),
+        Action::Command(command) => container(column![
+            text("Executes the given terminal command on press:"),
+            text_input("", command).on_input(Message::EditCommand)
+        ]),
+        _ => container(text("")),
     }
-    container(row![
-        Rule::vertical(20),
-        column![text(format!("Editing button {button_id}."))],
-    ])
-    .padding(5)
     .into()
 }

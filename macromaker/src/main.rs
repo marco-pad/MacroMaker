@@ -1,36 +1,48 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::time::Instant;
+use std::{io::Cursor, sync::atomic::AtomicUsize};
 
+use button::Button;
+use connection::Connection;
 use iced::{executor, font, window, Font};
 use iced::{Application, Command, Renderer, Settings, Theme};
-#[cfg(target_os = "windows")]
-use resvg::usvg::TreeParsing;
-pub mod menus;
-pub mod style;
-pub mod ui;
+use parking_lot::Mutex;
+
+use updates::Message;
+
+// Modules
+mod actions;
+mod button;
+mod connection;
+mod menus;
+mod style;
+mod ui;
 mod updates;
 
 pub const ICON_FONT: Font = Font::with_name("icons");
 
-pub const LOGO: &[u8; 1495] = include_bytes!("../assets/marcopad.svg");
+pub const LOGO: &[u8; 4981] = include_bytes!("../assets/marcopad.png");
+pub const SVG_LOGO: &[u8; 1495] = include_bytes!("../assets/marcopad.svg");
+
+static SELECTED_BUTTON: AtomicUsize = AtomicUsize::new(1);
+pub fn select_button(id: usize) {
+    SELECTED_BUTTON.store(id, std::sync::atomic::Ordering::Release);
+}
+pub fn selected_button() -> usize {
+    SELECTED_BUTTON.load(std::sync::atomic::Ordering::Acquire)
+}
+
+static mut CONNECTION: Option<Connection> = None;
+static BUTTONS: Buttons = Mutex::new([Button::NOTHING; 9]);
+
+type Buttons = Mutex<[Button; 9]>;
 
 fn window_icon() -> Option<window::Icon> {
-    #[cfg(target_os = "windows")]
-    {
-        let rtree = resvg::usvg::Tree::from_data(LOGO, &resvg::usvg::Options::default()).unwrap();
-        let mut tree = resvg::Tree::from_usvg(&rtree);
-        tree.size = resvg::usvg::Size::from_wh(64.0, 64.0).unwrap();
+    let mut image = image::io::Reader::new(Cursor::new(LOGO));
+    image.set_format(image::ImageFormat::Png);
+    let image = image.decode().unwrap().into_rgba8();
 
-        let mut buffer: [u8; 64 * 64 * 4] = [0; 64 * 64 * 4];
-
-        let mut pixmap = resvg::tiny_skia::PixmapMut::from_bytes(&mut buffer, 64, 64).unwrap();
-        tree.render(resvg::usvg::Transform::default(), &mut pixmap);
-
-        window::icon::from_rgba(buffer.to_vec(), 64, 64).ok()
-    }
-    #[cfg(not(target_os = "windows"))]
-    None
+    window::icon::from_rgba(image.into_vec(), 64, 64).ok()
 }
 fn main() -> iced::Result {
     App::run(Settings {
@@ -46,47 +58,18 @@ fn main() -> iced::Result {
     })
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum Message {
-    FontLoaded(Result<(), font::Error>),
-    Settings(bool),
-    ThemeChanged(bool),
-    EditChanged,
-    Button(usize),
-}
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Menu {
     Main,
     Settings,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Edited {
-    Macros,
-    Rgb,
-}
-
 pub struct App {
     menu: Menu,
-    edited: Edited,
-    when_edited: Instant,
     theme_light: bool,
     theme: Theme,
-    selected_button: usize,
-}
 
-impl Default for App {
-    fn default() -> Self {
-        Self {
-            menu: Menu::Main,
-            edited: Edited::Macros,
-            when_edited: Instant::now(),
-            theme_light: false,
-            theme: Theme::Dark,
-            selected_button: 0,
-        }
-    }
+    recording: bool,
 }
 
 impl Application for App {
@@ -102,12 +85,24 @@ impl Application for App {
         self.theme.clone()
     }
 
-    fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
+    fn new(_buttons: Self::Flags) -> (Self, Command<Self::Message>) {
         let omnes = font::load(include_bytes!("../assets/Omnes Pro Regular.otf").as_slice())
             .map(Message::FontLoaded);
         let icons =
             font::load(include_bytes!("../assets/icons.ttf").as_slice()).map(Message::FontLoaded);
-        (Self::default(), Command::batch(vec![omnes, icons]))
+        (
+            Self {
+                menu: Menu::Main,
+                theme_light: false,
+                theme: Theme::Dark,
+                recording: false,
+            },
+            Command::batch(vec![
+                omnes,
+                icons,
+                Command::perform(async {}, |_| Message::Input),
+            ]),
+        )
     }
 
     fn title(&self) -> String {
@@ -123,5 +118,11 @@ impl Application for App {
             Menu::Main => menus::main::view(self),
             Menu::Settings => menus::settings::view(self),
         }
+    }
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        let regular_update =
+            iced::time::every(std::time::Duration::from_millis(100)).map(|_| Message::Nothing);
+        let input = iced::subscription::events().map(Message::Event);
+        iced::Subscription::batch(vec![regular_update, input])
     }
 }
