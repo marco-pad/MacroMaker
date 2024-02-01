@@ -29,8 +29,8 @@ fn main() -> sysfs_gpio::Result<()> {
     update_ip(socket.try_clone().unwrap(), address.clone());
 
     loop {
-        let result = button.poll()?;
-        let buf = bincode::serialize(&result).unwrap();
+        let report = button.poll()?;
+        let buf = bincode::serialize(&firmware::Message::ButtonReport(report)).unwrap();
         socket.send_to(&buf, address.load()).unwrap();
     }
 }
@@ -38,11 +38,12 @@ fn main() -> sysfs_gpio::Result<()> {
 fn update_ip(socket: UdpSocket, address: Arc<AtomicCell<SocketAddr>>) {
     thread::spawn(move || {
         let address = address.clone();
+        let message = bincode::serialize(&firmware::Message::Ping).unwrap();
         let mut buf = [0; 1024];
         let mut addr = address.load();
         loop {
             let (len, addr2) = socket.recv_from(&mut buf).unwrap();
-            socket.send_to(&buf, addr).unwrap();
+            socket.send_to(&message, addr).unwrap();
             if addr != addr2 {
                 addr = addr2;
                 println!("IP changed: {}", String::from_utf8_lossy(&buf[..len]));

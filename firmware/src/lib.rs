@@ -12,3 +12,9 @@ pub struct ButtonReport {
     pub id: usize,
     pub state: State,
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Message {
+    Ping,
+    ButtonReport(ButtonReport),
+}

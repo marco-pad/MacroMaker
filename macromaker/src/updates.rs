@@ -24,18 +24,18 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
         Message::Nothing => (),
         Message::FontLoaded(_) => (),
         Message::Input => {
-            command = Command::perform(
-                async {
-                    unsafe {
-                        if let Some(connection) = CONNECTION.as_ref() {
-                            connection.recv().await.unwrap();
-                        } else {
-                            CONNECTION = Some(Connection::new().await.unwrap());
-                        }
-                    }
-                },
-                |_| Message::Input,
-            );
+            // command = Command::perform(
+            //     async {
+            //         unsafe {
+            //             if let Some(connection) = CONNECTION.as_ref() {
+            //                 connection.recv().await.unwrap();
+            //             } else {
+            //                 CONNECTION = Some(Connection::new().await.unwrap());
+            //             }
+            //         }
+            //     },
+            //     |_| Message::Input,
+            // );
         }
         Message::Event(event) => {
             if let Event::Keyboard(iced::keyboard::Event::KeyPressed { key_code, .. }) = event {
