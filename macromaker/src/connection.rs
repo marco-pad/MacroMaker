@@ -31,7 +31,7 @@ impl Connection {
         })
     }
 
-    pub async fn recv(&self) -> io::Result<()> {
+    pub async fn recv(&mut self) -> io::Result<()> {
         let mut buf: [u8; 1024] = [0; 1024];
         loop {
             self.socket.recv(&mut buf).await?;
@@ -40,6 +40,10 @@ impl Connection {
                 Err(_) => {
                     continue;
                 }
+            };
+            let firmware::Message::ButtonReport(report) = message else {
+                self.ping = self.last_request.elapsed().unwrap();
+                continue;
             };
             if !(1..=9).contains(&report.id) {
                 continue;
