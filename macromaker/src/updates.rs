@@ -1,6 +1,5 @@
 use crate::actions::Action;
-use crate::connection::Connection;
-use crate::{select_button, selected_button, App, Menu, BUTTONS, CONNECTION};
+use crate::{select_button, selected_button, App, Menu, BUTTONS};
 use iced::{Command, Event, Theme};
 
 #[derive(Debug, Clone)]
@@ -10,8 +9,9 @@ pub enum Message {
     Settings(bool),
     ThemeChanged(bool),
     Button(usize),
-    Input,
     Event(Event),
+    /// Whenever input is detected by the device.
+    Input,
 
     EditButton(Action),
     RecordKey,
@@ -19,24 +19,10 @@ pub enum Message {
 }
 
 pub fn update(app: &mut App, message: Message) -> Command<Message> {
-    let mut command = Command::none();
+    let command = Command::none();
     match message {
         Message::Nothing => (),
         Message::FontLoaded(_) => (),
-        Message::Input => {
-            // command = Command::perform(
-            //     async {
-            //         unsafe {
-            //             if let Some(connection) = CONNECTION.as_ref() {
-            //                 connection.recv().await.unwrap();
-            //             } else {
-            //                 CONNECTION = Some(Connection::new().await.unwrap());
-            //             }
-            //         }
-            //     },
-            //     |_| Message::Input,
-            // );
-        }
         Message::Event(event) => {
             if let Event::Keyboard(iced::keyboard::Event::KeyPressed { key_code, .. }) = event {
                 if app.recording {
@@ -44,6 +30,9 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                 }
                 app.recording = false;
             }
+        }
+        Message::Input => {
+            println!("Input detected");
         }
         Message::Settings(val) => {
             app.menu = if val { Menu::Settings } else { Menu::Main };

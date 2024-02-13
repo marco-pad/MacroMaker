@@ -48,12 +48,16 @@ impl Action {
                 State::Pressed => ENIGO.lock().key_down(enigo::Key::Raw(*key as u16)),
                 State::Released => ENIGO.lock().key_up(enigo::Key::Raw(*key as u16)),
             },
-            Self::Macro(combination) => {
+            Self::Macro(_combination) => {
                 todo!("run macro");
             }
             Self::Command(command) => {
                 if state == State::Pressed {
-                    std::process::Command::new(command).status().unwrap();
+                    let _ = std::process::Command::new(command)
+                        .status()
+                        .inspect_err(|e| {
+                            dbg!(e);
+                        });
                 }
             }
             Self::Nothing => (),
@@ -84,7 +88,7 @@ enum MacroAction {
 impl std::fmt::Display for MacroAction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Keypress(key) => {
+            Self::Keypress(_key) => {
                 write!(f, "Keypress")
             }
             Self::Command(_) => {

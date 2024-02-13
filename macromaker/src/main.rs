@@ -86,6 +86,7 @@ impl Application for App {
     }
 
     fn new(_buttons: Self::Flags) -> (Self, Command<Self::Message>) {
+        connection::ping_loop();
         let omnes = font::load(include_bytes!("../assets/Omnes Pro Regular.otf").as_slice())
             .map(Message::FontLoaded);
         let icons =
@@ -97,11 +98,7 @@ impl Application for App {
                 theme: Theme::Dark,
                 recording: false,
             },
-            Command::batch(vec![
-                omnes,
-                icons,
-                Command::perform(async {}, |_| Message::Input),
-            ]),
+            Command::batch(vec![omnes, icons]),
         )
     }
 
@@ -120,9 +117,8 @@ impl Application for App {
         }
     }
     fn subscription(&self) -> iced::Subscription<Self::Message> {
-        let regular_update =
-            iced::time::every(std::time::Duration::from_millis(100)).map(|_| Message::Nothing);
+        let connection = connection::subscribe();
         let input = iced::subscription::events().map(Message::Event);
-        iced::Subscription::batch(vec![regular_update, input])
+        iced::Subscription::batch(vec![connection, input])
     }
 }
