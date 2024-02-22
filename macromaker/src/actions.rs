@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use enigo::{Enigo, KeyboardControllable};
 use firmware::State;
-use iced::keyboard::KeyCode;
+use iced::keyboard::Key;
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 
@@ -13,7 +13,7 @@ static ENIGO: Lazy<Mutex<Enigo>> = Lazy::new(|| Mutex::new(Enigo::new()));
 pub enum Action {
     #[default]
     Nothing,
-    Keypress(KeyCode),
+    Keypress(Key),
     Macro(Macro),
     Command(String),
 }
@@ -38,7 +38,7 @@ impl std::fmt::Display for Action {
 impl Action {
     pub const ALL: [Action; 4] = [
         Action::Nothing,
-        Action::Keypress(KeyCode::E),
+        Action::Keypress(Key::Character("e".into())),
         Action::Macro(Macro::new()),
         Action::Command(String::new()),
     ];
@@ -81,7 +81,7 @@ impl Default for Macro {
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[allow(unused)]
 enum MacroAction {
-    Keypress(KeyCode),
+    Keypress(Key),
     Command(String),
     Wait(Duration),
 }
@@ -95,6 +95,18 @@ impl std::fmt::Display for MacroAction {
                 write!(f, "Terminal Command")
             }
             Self::Wait(_) => write!(f, "Wait"),
+        }
+    }
+}
+
+fn iced_to_enigo_key(key: iced::keyboard::Key) -> enigo::Key {
+    use enigo::Key;
+    use iced::keyboard::key::Named;
+    if let iced::keyboard::Key::Named(named_key) = key {
+        match named_key {
+            Named::Alt => Key::Alt,
+            Named::CapsLock => Key::CapsLock,
+            Named::Control => Key::Control,
         }
     }
 }

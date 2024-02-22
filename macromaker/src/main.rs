@@ -5,7 +5,7 @@ use std::{io::Cursor, sync::atomic::AtomicUsize};
 use button::Button;
 use connection::Connection;
 use iced::{executor, font, window, Font};
-use iced::{Application, Command, Renderer, Settings, Theme};
+use iced::{Application, Command, Settings, Theme};
 use parking_lot::Mutex;
 
 use updates::Message;
@@ -110,7 +110,7 @@ impl Application for App {
         updates::update(self, message)
     }
 
-    fn view(&self) -> iced::Element<'_, Self::Message, Renderer<Self::Theme>> {
+    fn view(&self) -> iced::Element<'_, Self::Message, Self::Theme> {
         match self.menu {
             Menu::Main => menus::main::view(self),
             Menu::Settings => menus::settings::view(self),
@@ -118,7 +118,7 @@ impl Application for App {
     }
     fn subscription(&self) -> iced::Subscription<Self::Message> {
         let connection = connection::subscribe();
-        let input = iced::subscription::events().map(Message::Event);
+        let input = iced::keyboard::on_key_press(|key, _| Some(updates::Message::KeyPress(key)));
         iced::Subscription::batch(vec![connection, input])
     }
 }

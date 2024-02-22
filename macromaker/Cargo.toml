@@ -8,8 +8,8 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { version = "0.10", features = ["svg", "tokio"] }
-image = "0.24.8"
+iced = { version = "0.12", features = ["svg", "tokio"] }
+image = "0.24"
 
 firmware = { path = "../firmware" }
 tokio = { version = "1.35.1", features = [ "net", "rt" ] }

@@ -9,13 +9,13 @@ pub enum Message {
     Settings(bool),
     ThemeChanged(bool),
     Button(usize),
-    Event(Event),
     /// Whenever input is detected by the device.
     Input,
 
     EditButton(Action),
     RecordKey,
     EditCommand(String),
+    KeyPress(iced::keyboard::Key),
 }
 
 pub fn update(app: &mut App, message: Message) -> Command<Message> {
@@ -23,13 +23,11 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
     match message {
         Message::Nothing => (),
         Message::FontLoaded(_) => (),
-        Message::Event(event) => {
-            if let Event::Keyboard(iced::keyboard::Event::KeyPressed { key_code, .. }) = event {
-                if app.recording {
-                    BUTTONS.lock()[selected_button() - 1].action = Action::Keypress(key_code)
-                }
-                app.recording = false;
+        Message::KeyPress(key) => {
+            if app.recording {
+                BUTTONS.lock()[selected_button() - 1].action = Action::Keypress(key)
             }
+            app.recording = false;
         }
         Message::Input => {
             println!("Input detected");
