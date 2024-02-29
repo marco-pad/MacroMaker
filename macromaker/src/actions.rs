@@ -38,15 +38,15 @@ impl std::fmt::Display for Action {
 impl Action {
     pub const ALL: [Action; 4] = [
         Action::Nothing,
-        Action::Keypress(Key::Character("e".into())),
+        Action::Keypress(Key::Character(smol_str::SmolStr::new_static("e"))),
         Action::Macro(Macro::new()),
         Action::Command(String::new()),
     ];
     pub fn perform(&self, state: State) {
         match self {
-            Self::Keypress(key) => match state {
-                State::Pressed => ENIGO.lock().key_down(enigo::Key::Raw(*key as u16)),
-                State::Released => ENIGO.lock().key_up(enigo::Key::Raw(*key as u16)),
+            Self::Keypress(_key) => match state {
+                State::Pressed => ENIGO.lock().key_down(enigo::Key::Raw(3)),
+                State::Released => ENIGO.lock().key_up(enigo::Key::Raw(3)),
             },
             Self::Macro(_combination) => {
                 todo!("run macro");
@@ -99,14 +99,17 @@ impl std::fmt::Display for MacroAction {
     }
 }
 
-fn iced_to_enigo_key(key: iced::keyboard::Key) -> enigo::Key {
+fn iced_to_enigo_key(key: iced::keyboard::Key) {
+    //-> enigo::Key {
     use enigo::Key;
     use iced::keyboard::key::Named;
     if let iced::keyboard::Key::Named(named_key) = key {
-        match named_key {
-            Named::Alt => Key::Alt,
-            Named::CapsLock => Key::CapsLock,
-            Named::Control => Key::Control,
-        }
+        // match named_key {
+        //     Named::Alt => Key::Alt,
+        //     Named::CapsLock => Key::CapsLock,
+        //     Named::Control => Key::Control,
+        // }
+    } else {
+        // enigo::Key::Raw(3)
     }
 }

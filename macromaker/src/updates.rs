@@ -1,6 +1,6 @@
 use crate::actions::Action;
 use crate::{select_button, selected_button, App, Menu, BUTTONS};
-use iced::{Command, Event, Theme};
+use iced::{Command, Theme};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -17,7 +17,6 @@ pub enum Message {
     EditCommand(String),
     KeyPress(iced::keyboard::Key),
 }
-
 pub fn update(app: &mut App, message: Message) -> Command<Message> {
     let command = Command::none();
     match message {

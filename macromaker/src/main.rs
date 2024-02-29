@@ -48,8 +48,8 @@ fn main() -> iced::Result {
     App::run(Settings {
         default_font: Font::with_name("Omnes Pro"),
         window: window::Settings {
-            size: (1280, 720),
-            min_size: Some((800, 600)),
+            size: iced::Size::new(1280.0, 720.0),
+            min_size: Some(iced::Size::new(800.0, 600.0)),
             resizable: true,
             icon: window_icon(),
             ..Default::default()

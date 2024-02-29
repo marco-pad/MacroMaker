@@ -14,7 +14,11 @@ pub fn back_icon<'a>() -> Element<'a, Message> {
     icon('\u{E801}')
 }
 
-pub fn nav_button<'a>(menu: Menu, tip: &str, icon: Element<'a, Message>) -> Element<'a, Message> {
+pub fn nav_button<'a>(
+    menu: Menu,
+    tip: &'a str,
+    icon: Element<'a, Message>,
+) -> Element<'a, Message> {
     tooltip(
         button(container(icon).width(40.0).center_x())
             .on_press(Message::Settings(menu.eq(&Menu::Settings)))

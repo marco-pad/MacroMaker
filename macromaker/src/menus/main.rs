@@ -9,7 +9,7 @@ use firmware::State;
 use iced::{
     theme,
     widget::{button, text_input, Svg},
-    Element, Length, Padding, Renderer, Theme,
+    Element, Length, Padding, Theme,
 };
 use iced::{
     widget::{
@@ -19,7 +19,7 @@ use iced::{
     Background, Color,
 };
 
-type Out<'a> = Element<'a, Message, Renderer<Theme>>;
+type Out<'a> = Element<'a, Message, Theme>;
 pub fn view(app: &App) -> Out {
     let logo_handle = svg::Handle::from_memory(crate::SVG_LOGO.as_slice());
 
@@ -38,9 +38,9 @@ pub fn view(app: &App) -> Out {
 fn top_bar<'a>(logo: Svg) -> Out<'a> {
     row![
         logo,
-        horizontal_space(Length::Fill),
+        horizontal_space(),
         text("marcoPad").size(50),
-        horizontal_space(Length::Fill),
+        horizontal_space(),
         nav_button(Menu::Settings, "Settings", settings_icon())
     ]
     .into()
