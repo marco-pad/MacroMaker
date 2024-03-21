@@ -1,7 +1,8 @@
 use crate::actions::Action;
 use firmware::State;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Button {
     pub action: Action,
     pub state: State,

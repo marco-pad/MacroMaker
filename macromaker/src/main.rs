@@ -7,6 +7,7 @@ use connection::Connection;
 use iced::{executor, font, window, Font};
 use iced::{Application, Command, Settings, Theme};
 use parking_lot::Mutex;
+use serde::{Deserialize, Serialize};
 
 use updates::Message;
 
@@ -36,6 +37,12 @@ static mut CONNECTION: Option<Connection> = None;
 static BUTTONS: Buttons = Mutex::new([Button::NOTHING; 9]);
 
 type Buttons = Mutex<[Button; 9]>;
+
+#[derive(Serialize, Deserialize)]
+struct Config {
+    buttons: [Button; 9],
+    light_mode: bool,
+}
 
 fn window_icon() -> Option<window::Icon> {
     let mut image = image::io::Reader::new(Cursor::new(LOGO));

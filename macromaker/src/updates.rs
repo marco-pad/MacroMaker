@@ -22,11 +22,13 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
     match message {
         Message::Nothing => (),
         Message::FontLoaded(_) => (),
-        Message::KeyPress(key) => {
-            if app.recording {
-                BUTTONS.lock()[selected_button() - 1].action = Action::Keypress(key)
-            }
-            app.recording = false;
+        Message::KeyPress(_key) => {
+            //TODO: Ooops
+            // if app.recording {
+            //     BUTTONS.lock()[selected_button() - 1].action =
+            //         Action::Keypress(enigo::Key::Raw(key.into()))
+            // }
+            // app.recording = false;
         }
         Message::Input => {
             println!("Input detected");
